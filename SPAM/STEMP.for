@@ -43,7 +43,7 @@ C-----------------------------------------------------------------------
       IMPLICIT  NONE
       SAVE
 
-      CHARACTER*1  RNMODE, ISWWAT !, IDETL
+      CHARACTER*1  RNMODE, ISWWAT,MEEVP !, IDETL (CSVC ADD MEEVP)
       CHARACTER*6  SECTION
       CHARACTER*6, PARAMETER :: ERRKEY = "STEMP "
       CHARACTER*30 FILEIO
@@ -198,7 +198,8 @@ C-----------------------------------------------------------------------
       ENDIF
 
 !     Print soil temperature data in STEMP.OUT
-      CALL OPSTEMP(CONTROL, ISWITCH, DOY, SRFTEMP, ST, TAV, TAMP)
+          IF (MEEVP .NE. 'Z')    !CSVC
+     & CALL OPSTEMP(CONTROL, ISWITCH, DOY, SRFTEMP, ST, TAV, TAMP)
 
 !***********************************************************************
 !***********************************************************************
@@ -241,7 +242,8 @@ C-----------------------------------------------------------------------
 !***********************************************************************
       ELSEIF (DYNAMIC .EQ. OUTPUT .OR. DYNAMIC .EQ. SEASEND) THEN
 !-----------------------------------------------------------------------
-      CALL OPSTEMP(CONTROL, ISWITCH, DOY, SRFTEMP, ST, TAV, TAMP)
+          IF (MEEVP .NE. 'Z')    !CSVC
+     & CALL OPSTEMP(CONTROL, ISWITCH, DOY, SRFTEMP, ST, TAV, TAMP)
 
 !***********************************************************************
 !***********************************************************************
@@ -367,7 +369,7 @@ C=======================================================================
 ! ABD      Average bulk density for soil profile (g [soil] / cm3 [soil])
 ! ALBEDO   Reflectance of soil-crop surface (fraction)
 ! ALX       
-! ATOT     Sum of TMA array (last 5 days soil temperature) (°C)
+! ATOT     Sum of TMA array (last 5 days soil temperature) (ï¿½C)
 ! B        Exponential decay factor (Parton and Logan) (in subroutine 
 !            HTEMP) 
 ! BD(L)    Bulk density, soil layer L (g [soil] / cm3 [soil])
@@ -414,23 +416,23 @@ C=======================================================================
 !            density, drained upper limit, lower limit, pH, saturation 
 !            water content.  Structure defined in ModuleDefs. 
 ! SRAD     Solar radiation (MJ/m2-d)
-! SRFTEMP  Temperature of soil surface litter (°C)
-! ST(L)    Soil temperature in soil layer L (°C)
+! SRFTEMP  Temperature of soil surface litter (ï¿½C)
+! ST(L)    Soil temperature in soil layer L (ï¿½C)
 ! SW(L)    Volumetric soil water content in layer L
 !           (cm3 [water] / cm3 [soil])
 ! SWI(L)   Initial soil water content (cm3[water]/cm3[soil])
-! TA       Daily normal temperature (°C)
+! TA       Daily normal temperature (ï¿½C)
 ! TAMP     Amplitude of temperature function used to calculate soil 
-!            temperatures (°C)
+!            temperatures (ï¿½C)
 ! TAV      Average annual soil temperature, used with TAMP to calculate 
-!            soil temperature. (°C)
-! TAVG     Average daily temperature (°C)
+!            soil temperature. (ï¿½C)
+! TAVG     Average daily temperature (ï¿½C)
 ! TBD      Sum of bulk density over soil profile 
 ! TDL      Total water content of soil at drained upper limit (cm)
 ! TLL      Total soil water in the profile at the lower limit of 
 !            plant-extractable water (cm)
-! TMA(I)   Array of previous 5 days of average soil temperatures. (°C)
-! TMAX     Maximum daily temperature (°C)
+! TMA(I)   Array of previous 5 days of average soil temperatures. (ï¿½C)
+! TMAX     Maximum daily temperature (ï¿½C)
 ! TSW      Total soil water in profile (cm)
 ! WC        
 ! WW        
