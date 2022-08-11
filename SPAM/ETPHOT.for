@@ -309,7 +309,6 @@ C     &     RBSHN,RBSLN,RBSSN,RBSHT,RBSLT,RBSST,
 
         IF (MEPHO .EQ. 'L') THEN
 
-CSVC_output_problem        print*,'DYNAMIC .EQ. SEASINIT ', DAS
 
           CALL OpETPhot(CONTROL, ISWITCH,
      &        PCINPD, PG, PGNOON, PCINPN, SLWSLN, SLWSHN,
@@ -745,13 +744,20 @@ C       Assign daily values.
         CANWH = HOLDWH
 
         IF (MEEVP .EQ. 'Z') THEN
-          IF (XLAI .GT. 0.0) THEN
+! FO - 06/30/2022 - Protections on DAYRAD for higher XLATs
+          IF (XLAI .GT. 0.0 .AND. DAYRAD .GT. 0.0) THEN
             DAYKR = -LOG((DAYRAD-DYINTR)/DAYRAD) / XLAI
           ELSE
             DAYKR = 0.0
           ENDIF
-          PCABRD = DYABSR / DAYRAD * 100.0
-          PCINRD = DYINTR / DAYRAD * 100.0
+          IF(DAYRAD .GT. 0.0) THEN
+            PCABRD = DYABSR / DAYRAD * 100.0
+            PCINRD = DYINTR / DAYRAD * 100.0
+          ELSE
+            PCABRD = 0.0
+            PCINRD = 0.0
+          ENDIF
+
           DO I=1,NLAYR
             ST2(I) = ST2(I) / TS
           ENDDO
@@ -759,7 +765,11 @@ C       Assign daily values.
             TSRF(I) = TSRF(I) / TS
           ENDDO
           TCANAV = TCANAV / TS
-          TCANDY = TCANDY / NHOUR
+          IF(NHOUR .GT. 0) THEN
+            TCANDY = TCANDY / NHOUR
+          ELSE
+            TCANDY = 0.0
+          ENDIF          
           TGRODY = TCANDY
           TGROAV = TCANAV
           DO  I=1,TS
@@ -799,15 +809,24 @@ C          ES = MAX(MIN(EDAY,AWEV1),0.0)
         ENDIF
 
         IF (MEPHO .EQ. 'L') THEN
-          IF (XLAI .GT. 0.0) THEN
+        ! FO - 06/30/2022 - Protections on DAYRAD for higher XLATs
+          IF (XLAI .GT. 0.0 .AND. DAYPAR .GT. 0.0) THEN
             DAYKP = -LOG((DAYPAR-DYINTP)/DAYPAR) / XLAI
           ELSE
             DAYKP = 0.0
           ENDIF
-
-          PCABPD = DYABSP / DAYPAR * 100.0
-          PCINPD = DYINTP / DAYPAR * 100.0
-          FRSHAV = FRSHAV / NHOUR
+          IF(DAYPAR .GT. 0.0) THEN
+            PCABPD = DYABSP / DAYPAR * 100.0
+            PCINPD = DYINTP / DAYPAR * 100.0
+          ELSE
+            PCABPD = 0.0 
+            PCINPD = 0.0
+          ENDIF
+          IF(NHOUR .GT. 0) THEN
+            FRSHAV = FRSHAV / NHOUR
+          ELSE
+            FRSHAV = 0.0
+          ENDIF
           PG = PGDAY/44.0*30.0 * SLPF
           PGCO2 = PGDAY * SLPF
 
@@ -846,8 +865,6 @@ C         Post-processing for some stress effects (duplicated in PHOTO).
           ENDIF
           PG = PG * EXCESS
 
-CSVC_output_problem       print*,'DYNAMIC.EQ.RATE  ',DAS,TGRO(TS/2)
-
           CALL OpETPhot(CONTROL, ISWITCH,
      &        PCINPD, PG, PGNOON, PCINPN, SLWSLN, SLWSHN,
      &        PNLSLN, PNLSHN, LMXSLN, LMXSHN, TGRO, TGROAV,
@@ -875,8 +892,6 @@ CSVC
       ELSEIF (DYNAMIC .EQ. SEASEND .OR. DYNAMIC .EQ. OUTPUT) THEN
 !-----------------------------------------------------------------------
         IF (MEPHO .EQ. 'L') THEN
-
-CSVC_output_problem      print*,'DYNAMIC .EQ. SEASEND',DAS,TGRO(TS/2)
 
                 CALL OpETPhot(CONTROL, ISWITCH,
      &        PCINPD, PG, PGNOON, PCINPN, SLWSLN, SLWSHN,
@@ -1055,7 +1070,7 @@ C     Initialize some parameters.
         BETN = 0.0
       ENDIF
 
-      NELAYR = 2
+      NELAYR = 1
       LWIDTH = 0.02
       RCUTIC = 5000.0
       DO I = 1,NLAYR
@@ -1103,7 +1118,8 @@ C     at 0.1 * the 1st stage evaporation amount.
         DULE = DULE + DUL2(I)*DLAYR2(I)*10.0
         LLE = LLE + LL2(I)*DLAYR2(I)*10.0
       ENDDO
-      CEC = 0.2*100 !  
+C cSVC Aug2022      CEC = 0.2*100 !  
+       CEC = 0.0
 
 C     Calculate soil thermal properties.  Arrays YSHCAP and YSCOND store
 C     results for daily table lookup as a function of moisture content.
@@ -1385,7 +1401,7 @@ C=======================================================================
      &  YSHCAP(NL,3),SWTD
 
 CSVC	REAL DAYG,DAYLH,DAYSH,DAYRN
-	REAL DAYG,DAYLH,DAYSH,DAYRN
+	      REAL DAYG,DAYLH,DAYSH,DAYRN
 CSVC
 
       REAL SALB, SALBW, SALBD
@@ -1404,10 +1420,10 @@ C     Initialize.
       PCABRN = 0.0
       RADN   = 0.0
 CSVC
-	DAYG  = 0.0
-	DAYLH = 0.0
-	DAYSH = 0.0
-	DAYRN = 0.0
+	      DAYG  = 0.0
+      	DAYLH = 0.0
+	      DAYSH = 0.0
+	      DAYRN = 0.0
 CSVC
 
       DO I=1,NLAYR
@@ -1448,7 +1464,6 @@ C     and soil thermal conductivity by layer.
         STCOND(I) = TABEX(YTC,XC,SW2(I),3)
       ENDDO
 
-C CSVC_TEST FOR SOIL TEMP CALIBRATION      STCOND(1) = STCOND(1)*0.85
 
 C     Calulation of albedo as a function of SW.
 
@@ -1707,6 +1722,8 @@ C  REVISION HISTORY
 C  03/14/91 NBP Written
 C  11/15/91 NBP Modified
 C  11/23/93 NBP Included more error checks and limits
+C  08/20/21 CHP Added error protection
+C  09/13/21 FO  Updated error call because of compiler issue.
 C-----------------------------------------------------------------------
 C  Called from: RADABS
 C  Calls:
@@ -1719,9 +1736,11 @@ C=======================================================================
       IMPLICIT NONE
       SAVE
 
+      CHARACTER*6 ERRKEY
       REAL A,B,C1,C2,C3,C4,AZIMD,AZIR,AZZON,BETA,BETN,CANHT,CANWH,ETA,
      &  FRACSH,GAMMA,PI,RAD,RBETA,ROWSPC,SHADE,SHLEN,SHPERP,STOUCH,ZERO
-      PARAMETER (PI=3.14159, RAD=PI/180.0, ZERO=1.0E-6)
+       PARAMETER (PI=3.14159, RAD=PI/180.0, ZERO=1.0E-6)
+            PARAMETER (ERRKEY = 'SHADOW')
 
 C     Set fraction shaded to 0.0 for zero width or height.
 
@@ -1753,6 +1772,10 @@ C       Calculate shadow length assuming elliptical plant.
 
         SHLEN = CANHT * COS(RBETA-GAMMA) / SIN(RBETA) *
      &    SQRT((1.0+C2)/(1.0+C1))
+
+!       CHP 2021-08-20
+        SHLEN = MAX (0.0, SHLEN)
+
         B = (SHLEN/CANWH)**2
         C3 = B*(TAN(AZIMD))**2
         C4 = (B*TAN(AZIMD))**2
@@ -1793,8 +1816,8 @@ C           Limit shadow length to within one ROWSPC.
 C FO/GH 11/14/2020 Code protections for divisions by zero.
             IF (SHPERP .GT. 0.0 .AND. SHPERP .GT. ROWSPC) THEN
               SHLEN = SHLEN * ROWSPC/SHPERP
-            ELSE
-              SHLEN = 0.0
+!            ELSE
+!              SHLEN = 0.0
             ENDIF
             
             SHADE = 0.25 * PI * SHLEN * CANWH
@@ -1805,11 +1828,15 @@ C FO/GH 11/14/2020 Code protections for divisions by zero.
 C FO/GH 11/14/2020 Code protections for divisions by zero.
         IF(ROWSPC .GT. 0.0 .AND. BETN .GT. 0.0) THEN
           FRACSH = MIN(SHADE/(ROWSPC*BETN),1.0)
+                  ELSE
+!         chp 2021-08-20 Added error protection.
+          CALL ERROR(ERRKEY,1,'SHADOW',0)
         ENDIF
 
       ENDIF
 
-      FRACSH = MIN(MAX(FRACSH,1.0E-6),1.0)
+!     FRACSH = MIN(MAX(FRACSH,1.0E-6),1.0)
+      FRACSH = MIN(MAX(FRACSH,0.0),1.0)
 
       RETURN
       END SUBROUTINE SHADOW
@@ -1822,6 +1849,9 @@ C-----------------------------------------------------------------------
 C  REVISION HISTORY
 C  ??/??/?? KJB Written
 C  05/14/91 NBP Removed COMMON and reorganized.
+C  11/14/20 FO/GH Code protections for divisions by zero.
+C  12/03/21 FO/GH/CHP Protections to avoid negative leaf are index (LAI)
+
 C-----------------------------------------------------------------------
 C  Called from: RADABS
 C  Calls:
@@ -1835,7 +1865,9 @@ C=======================================================================
       SAVE
 
       REAL BETA,F15,F45,F75,FRACSH,K15,K45,K75,KDIRBL,KDIFBL,LAISH,
-     &  LAISL,LFANGD(3),O15,O45,O75,OAV,PI,RAD,RNG,SINB,VARSIN,XLAI
+     &  LAISL,LFANGD(3),O15,O45,O75,OAV,PI,RAD,RNG,SINB,VARSIN,XLAI,
+     &  FRAKDI
+
       PARAMETER (PI = 3.14159, RAD = PI/180.0)
 
 C     Initialization.  F15, F45, and F75 are the proportion of leaves
@@ -1886,19 +1918,20 @@ C     Calculate sunlit and shaded leaf area indices.
 !CHP added check to prevent underflow 1/16/03
 C FO/GH 11/14/2020 Code protections for divisions by zero.
       IF (KDIRBL .GT. 0.0 .AND. FRACSH .GT. 0.0) THEN    
-        LAISL = (FRACSH/KDIRBL) * (1.0-EXP(-KDIRBL*XLAI/FRACSH))
+        !LAISL = (FRACSH/KDIRBL) * (1.0-EXP(-KDIRBL*XLAI/FRACSH))
+        FRAKDI = FRACSH/KDIRBL
+        LAISL = FRAKDI * (1.0-EXP(-XLAI/FRAKDI))
       ELSE
         LAISL = 0.0
       ENDIF
+
+          LAISL = MIN(LAISL,XLAI)
 C-KRT*******************************
 C-KRT  LAISH = XLAI - LAISL
 !-CHP  LAISH = MAX(0.02,XLAI - LAISL)
 C FO/GH 11/14/2020 Code protections for divisions by zero.
-      IF(XLAI .GT. LAISL) THEN
-         LAISH = XLAI - LAISL
-      ELSE
-          LAISH = 0.0
-      ENDIF
+      LAISH = MAX(0.0, XLAI - LAISL)
+
       
 C-KRT*******************************
       RETURN
@@ -1911,6 +1944,8 @@ C-----------------------------------------------------------------------
 C  REVISION HISTORY
 C  ??/??/?? KJB Written
 C  05/14/91 NBP Removed COMMON and reorganized.
+C  12/03/21 FO/GH/CHP Protections to compute diffuse/scattered
+C               components of the direct beam.
 C-----------------------------------------------------------------------
 C  Called from: RADABS
 C  Calls:
@@ -1973,10 +2008,10 @@ C     (ADDR) and diffuse/scattered (ADDF) components of the direct beam.
 C-KRT****************************
 C-KRT   ADDF = ADIR - ADDR
 !-CHP   ADDF = MAX(0.0,ADIR-ADDR)
-        ADDF = ADIR - ADDR
-!        IF (ADDF < 0.0) THEN
-!          ADDF = 0.0
-!        ENDIF
+!-FO        ADDF = ADIR - ADDR
+
+        ADDR = MIN(ADDR, ADIR)
+        ADDF = MAX(0.0,ADIR-ADDR)
 C-KRT****************************
 !        IF ((KDIRBL*SQV*LAISL/FRACSH) .LT. 20.) THEN
           ADIRSL = FRACSH * (1.0-REFDR) * RADDIR *
@@ -1996,9 +2031,18 @@ C-KRT   ADDFSL = ADIRSL - ADDRSL
 C-KRT   ADDFSH = ADDF - ADDFSL
 !-CHP   ADDFSL = MAX(0.0,ADIRSL - ADDRSL)
 !-CHP   ADDFSH = MAX(0.0,ADDF - ADDFSL)
-        ADDFSL = ADIRSL - ADDRSL
-        ADDFSH = ADDF - ADDFSL
+!-FO        ADDFSL = ADIRSL - ADDRSL
 
+        ADDRSL = MIN(ADDRSL, ADIRSL)
+        ADDFSL = MAX(0.0,ADIRSL - ADDRSL)
+        
+        
+!-FO        ADDFSH = ADDF - ADDFSL
+
+        ADDFSL = MIN(ADDFSL, ADDF)
+        ADDFSH = MAX(0.0,ADDF - ADDFSL)
+        
+C-KRT************************************
       ELSE
         ADIR   = 0.0
         ADDR   = 0.0
@@ -2033,7 +2077,15 @@ C     extended for both between plants (P) and rows (R).
      &  (1.0-EXP(-KDIFBL*SQV*XLAI/DIFPR))
       ADIFSL = DIFPR * (1.0-REFDF) * RADDIF *
      &  (1.0-EXP(-KDIFBL*SQV*LAISL/DIFPR))
-      ADIFSH = ADIF - ADIFSL
+C-KRT********************************
+C-KRT ADIFSH = ADIF - ADIFSL
+!-CHP ADIFSH = MAX(0.0,ADIF - ADIFSL)
+!-FO      ADIFSH = ADIF - ADIFSL
+
+      ADIFSL = MIN(ADIFSL, ADIF)
+      ADIFSH = MAX(0.0,ADIF - ADIFSL)
+      
+C-KRT********************************
 
 C     Light reflected from the soil assumed to be isotropic and diffuse.
 C     Absorption handled in the same manner as diffuse skylight.
@@ -2047,7 +2099,15 @@ C     Absorption handled in the same manner as diffuse skylight.
      &  (1.0-EXP(-KDIFBL*SQV*XLAI/DIFPR))
       AREFSH = DIFPR * (1.0-REFDF) * REFSOI *
      &  (1.0-EXP(-KDIFBL*SQV*LAISH/DIFPR))
-      AREFSL = AREF - AREFSH
+C-KRT********************************
+C-KRT AREFSL = AREF - AREFSH
+!-CHP AREFSL = MAX(0.0,AREF - AREFSH)
+!-FO      AREFSL = AREF - AREFSH
+
+      AREFSH = MIN(AREFSH, AREF)
+      AREFSL = MAX(0.0,AREF - AREFSH)
+
+C-KRT********************************
       ATOT = ADIR + ADIF + AREF
       REFTOT = REFDIR + REFDIF + REFSOI - AREF
 

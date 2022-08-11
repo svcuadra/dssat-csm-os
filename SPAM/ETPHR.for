@@ -342,10 +342,7 @@ c           UPRATE = 1./2.
         SHCAP(1) = TABEX(YHC,XC,SW2,3)
         STCOND(1) = TABEX(YTC,XC,SW2,3)
         STCONDSS  =  TABEX(YTC,XC,SWEH2/(SSH*10.),3)*0.5
-C previous two lines uncommented by BK and KB on 11Jul17
-C per version 3.5 of DSSAT
 
-c      print*,YRDOY,DAS,H,SWEH,SWE,EHR,CEN
 
       ENDIF
 
@@ -586,7 +583,12 @@ C     Compute canopy photosynthesis (mmol CO2/m2/s).
         ENDIF
       ENDIF
       PGHR = PGSL*LAISL + PGSH*LAISH
-      AGEFAC = (LAISL*AGMXSL+LAISH*AGMXSH) / XLAI
+CcSVC      AGEFAC = (LAISL*AGMXSL+LAISH*AGMXSH) / XLAI
+      IF(XLAI .GT. 0.0) THEN
+        AGEFAC = (LAISL*AGMXSL+LAISH*AGMXSH) / XLAI
+      ELSE
+        AGEFAC = 0.0
+      ENDIF
 
       RETURN
       END SUBROUTINE CANOPG
@@ -1074,7 +1076,7 @@ C     Calculate QEFF and LFMAX at ambient conditions.
 C=======================================================================
 C  PGLEAF, Subroutine, K.J.Boote, J.W.Jones, G.Hoogenboom
 C  Calculate instantaneous leaf photosynthesis as a function of PAR
-C  and leaf characteristics (�mol/m2/s).  Leaf conductance calculated
+C  and leaf characteristics (mmol/m2/s).  Leaf conductance calculated
 C  as a function of net photosynthesis and Ci/Ca ratio (cm/s)
 C-----------------------------------------------------------------------
 C  REVISION HISTORY
@@ -1106,7 +1108,7 @@ C     Initialization.
 
       RT = RGAS * (TEMPHR+273.0)
 
-C     Calculate leaf photosynthesis (�mol CO2/m2/s) using a non-rectangular
+C     Calculate leaf photosynthesis (mmol CO2/m2/s) using a non-rectangular
 C     hyperbola (Rabinowitch, 1951; Lommen et al, 1971; Evans and Farquhar,
 C     Norman and Arkebauer, Gutschick, In: Boote and Loomis, 1991)
 
@@ -1121,7 +1123,7 @@ C       PGLF = (B - SQRT(B**2-4.*A*C)) / (2.*A)
       ELSE
         PGLF = MAX(LFMAX, 0.0)
       ENDIF
-      PNLF = PGLF
+            PNLF = PGLF
 
 C     Calculate leaf CO2 conductance (mol/m2/s) using assumption of constant
 C     CI/CA ratio.  Compensation point (GAMST) is temperature dependent.

@@ -146,9 +146,9 @@ C-----------------------------------------------------------------------
      &      (DYNAMIC .EQ. SEASEND .AND. MOD(DAS,FROP) .NE. 0) .OR.
      &       DAS == 1) THEN
 
-        IF(MEEVP .NE. "Z") then       ! SVC
+          IF(MEEVP .NE. "Z") then       ! SVC
 	     DAYG  =-99.                   ! SVC
-         DAYLH =-99.                   ! SVC
+          DAYLH =-99.                   ! SVC
 	     DAYSH =-99.                   ! SVC
 	     DAYRN =-99.                   ! SVC
 	     ENDIF                         ! SVC
