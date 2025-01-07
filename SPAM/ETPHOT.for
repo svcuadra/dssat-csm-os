@@ -75,7 +75,7 @@ C-----------------------------------------------------------------------
 !         TSV2 = index for mid-day hour added by Bruce Kimball on 9JAN17
       LOGICAL DAYTIM
       REAL AGEFAC,AZIR,AZZON(TS),BETA(TS),BETN,   !AWEV1,
-     &  CANHT,CANWH,CEC,CEN,CLOUDS,CO2,CO2HR,DAYKP,DAYKR,DAYPAR,
+     &  CANHT,CANWH,CEN,CLOUDS,CO2,CO2HR,DAYKP,DAYKR,DAYPAR,
      &  DAYRAD,DLAYR(NL),DLAYR2(NL),DULE,DYABSP,DYABSR,DYINTP,
      &  DYINTR,EDAY,EHR,EOP,EP,ES,ETNOON,FNPGN(4),FNPGL(4),FRACSH,
      &  FRDFPN,FRDFRN,FRDIFP(TS),FRDIFR(TS),FRSHAV,FRSHV,
@@ -122,7 +122,11 @@ C         added by BAK on 10DEC2015
       REAL    CISH,CISL,VPDSL,VPDSH
       REAL    TGROUT,CISLn,CISHn,CWSHn, CWSLn,C2SHn,C2SLn
       REAL    DIFPR,RNN,EMISAV,TK4CAN,TK4SKY
+CSVC2025      
       CHARACTER*1 TGROM
+CSVC2025    
+      REAL CEC
+      
 
       REAL, DIMENSION(NL) :: BD, DUL, SAT2, DUL2, RLV2
 
@@ -546,6 +550,7 @@ C         and mm/d).
             TGRO(H) = TAIRHR(H)
 
             ! KEN, Please take this key to .X file
+CSVC2025        
             TGROM = 'L'
   
             IF((LAISL + LAISH) .GT. 0.0) THEN
@@ -1054,6 +1059,7 @@ C     Initialize some parameters.
       ENDIF
 
 !     2023-07-20 FO/SC Changed NELAYR because it simulates better
+CSVC2025    
       NELAYR = 2
       LWIDTH = 0.02
       RCUTIC = 5000.0
@@ -1100,6 +1106,7 @@ C     at 0.1 * the 1st stage evaporation amount.
       ENDDO
 C     CEC = 0.45 * U / (DULE-LLE) * 100.0
 ! 08/10/2022 SC/FO - Added CEC computation for EBL model
+CSVC2025      
       CEC = 0.2*100 
 
 C     Calculate soil thermal properties.  Arrays YSHCAP and YSCOND store
@@ -1373,7 +1380,10 @@ C=======================================================================
       EXTERNAL SOIL10, TABEX
       SAVE
 
-      INTEGER I,J,NELAYR,NLAYR
+CSVC2025      
+      INTEGER NELAYR
+      
+      INTEGER I,J,NLAYR
       REAL CEN,DAYRAD,DLAYR2(NL),DULE,DYABSR,DYINTR,EDAY,ETNOON,FRDFRN,
      &  LLE,PCINRN,PCABRN,RADN,SHCAP(NL),ST2(NL),STCOND(NL),
      &  SW(NL),SW2(NL),SWE,EOP,TABEX,TDAY,TEMPN,TSRF(3),

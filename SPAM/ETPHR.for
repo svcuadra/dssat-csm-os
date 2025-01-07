@@ -75,11 +75,14 @@ C=======================================================================
 ! 08/10/2022 SC/FO - Variables for EBL model
       INTEGER H
       REAL TABEX,SW2,YHC(3),YTC(3),XSW(NL,3),YSCOND(NL,3),DIFPR
-      REAL UPRATE,SSH
+      REAL UPRATE
+CSVC2025      
+      REAL SSH,TW
+      
       REAL YSHCAP(NL,3),XC(3),TCAN1 ,VPSAT
       REAL PGSL,PGSH,CISH,CISL,VPDSL,VPDSH
       REAL SWTD, SWEH, EMISAV, TK4CAN, TK4SKY
-      REAL DIVTHR,TW,SWEH2,STCONDSS
+      REAL DIVTHR,SWEH2,STCONDSS
       
       PARAMETER (ERRBND=0.01)
       
@@ -321,9 +324,11 @@ C previous 4 lines commented out by BK and KB on 11Jul17
 ! 08/10/2022 SC/FO - Added source code for EBL model.
 !       UPRATE = 1./2.
 !       Soil Skin hight
+CSVC2025
         SSH = 3.0
 !       Fraction soil water homogenization with the rest of 
-!       the soil (1st and 2 layers) per time step        
+!       the soil (1st and 2 layers) per time step  
+CSVC2025
         TW  = 1./4.
 
        
@@ -1081,7 +1086,10 @@ C=======================================================================
       REAL A,B,C,CICA,CINT,CO2HR,CCO2LF,CONDLF,CVTURE,GAMST,LFMAX,QEFF,
      &  PARLF,PATM,PGLF,PNLF,RGAS,RT,TAU,TEMPHR,WINDHR
      
-      REAL VPDATM,gsmin,VPDSLP,VPDMIN,gbco2
+CSV2025
+      REAL gsmin,VPDSLP,VPDMIN
+
+      REAL VPDATM,gbco2
 
       CHARACTER PGPATH*2,MEEVP*1
       REAL CCNEFF, CICAD,ASLP,CSHR,VPDFACTOR
@@ -1159,6 +1167,7 @@ C CSVC - when use gsmin equal to 0.01 model gets instabel for
 !        some experiments
 C CSVC - we need more investigations about model instability 
 !        when resistences goes high!!!
+CSV2025
         gsmin  = 0.05   !KJB, please take these to .SPE file
         VPDSLP = -0.32  !KJB, please take these to .SPE file
         VPDMIN = 0.5    !KJB, please take these to .SPE file
@@ -1352,6 +1361,10 @@ C        added RB and RSURF to output on 1DEC2014 by Bruce Kimball
      &  LAISH,LAISL,LWIDTH,RCUTIC,RA,RB(3),REFHT,RL(3,3),
      &  RMAX,RS(3,3),RSSH,RSSL,RSSS,RSURF(3),TAIRHR,TCAN,
      &  WINDHR,XLAI,USTAR,VHCAIR,TSURF(3,1),DIFPR
+      
+CSVC2025      
+      REAL RSSSC
+      
       PARAMETER (RMAX=50000)
 
 C     Initialization.
@@ -1398,12 +1411,13 @@ C       this means RLEAF = RMAX for both heat and vapor.
 C     Calculate soil surface resistance. Radiation component (a+b*rna)
 C     reduced to constant 0.0117 using the average RNA from Jagtap (1976).
 C     If RNET is included again, may need a RNMIN too.
-
+CSVC2025
+        RSSSC = 0.06
       IF (CEN .LE. CEC) THEN
         RSSS = 50.0
       ELSE
 c        RSSS = 100.0 + 154.0*(EXP(0.0117*(CEN-CEC)**1.37)-1.0)
-        RSSS = 50.0 + 100*EXP(0.06*(CEN-CEC))
+        RSSS = 50.0 + 100*EXP(RSSSC*(CEN-CEC))
       ENDIF
       RSURF(3) = MIN(RSSS,RMAX)
 C     Create resistance matrices (RS, RL).
